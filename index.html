@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语单词学习助手</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .stage-title {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #34495e;
+        }
+        .word-card {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        .word-card h2 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .word-card p {
+            margin: 10px 0;
+            color: #7f8c8d;
+            line-height: 1.6;
+        }
+        .buttons {
+            text-align: center;
+        }
+        .buttons button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .buttons button:hover {
+            background-color: #2980b9;
+        }
+        #start-quiz-btn {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .quiz-question {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .quiz-question p {
+            margin: 10px 0;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        .quiz-options {
+            text-align: center;
+        }
+        .quiz-options button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 45%;
+            transition: all 0.3s;
+        }
+        .quiz-options button:hover {
+            background-color: #dfe6e9;
+            border-color: #bdc3c7;
+        }
+        .result {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .wrong-tag {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #ff9f43;
+            color: white;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>英语单词学习助手</h1>
+        </div>
+        <div id="learning-stage">
+            <h2 class="stage-title">学习阶段</h2>
+            <div class="word-card" id="word-card">
+                <h2 id="word"></h2>
+                <p><strong>中文释义：</strong><span id="chinese-definition"></span></p>
+                <p><strong>英文释义：</strong><span id="english-definition"></span></p>
+                <p><strong>例句：</strong><span id="example"></span></p>
+            </div>
+            <div class="buttons">
+                <button id="prev-btn" onclick="prevWord()">前一页</button>
+                <button id="next-btn" onclick="nextWord()">后一页</button>
+            </div>
+            <button id="start-quiz-btn" onclick="startQuiz()">开始测验</button>
+        </div>
+        <div id="quiz-stage" style="display: none;">
+            <h2 class="stage-title">测验阶段</h2>
+            <div class="quiz-question" id="quiz-question">
+                <p id="quiz-word"></p>
+                <div id="wrong-tag-container"></div>
+            </div>
+            <div class="quiz-options" id="quiz-options"></div>
+            <div class="result" id="quiz-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const wordBank = [
+            { word: "accord", chinese: "使符合；给予", english: "cause to conform; grant", example: "He gave his accord to the plan." },
+            { word: "amid", chinese: "在…当中；在…之间", english: "in the middle of; among", example: "Amid the chaos, she remained calm." },
+            { word: "apt", chinese: "易于…的，有…倾向的", english: "likely or having a tendency to do something", example: "He is apt to forget things." },
+            { word: "ashore", chinese: "在岸上；向岸边", english: "on land; to the shore", example: "The ship was heading ashore." },
+            { word: "assemble", chinese: "集合；装配", english: "bring or call together into a group; fit together the parts or pieces of", example: "They assembled the furniture." },
+            { word: "at sea", chinese: "在海上航行", english: "during a ship’s voyage on the sea", example: "The sailors were at sea for weeks." },
+            { word: "expose", chinese: "暴露于；与…接触", english: "leave uncovered; make accessible to", example: "Children should not be exposed to violence." },
+            { word: "compassionate", chinese: "表示怜悯的；有同情心的", english: "showing feeling sympathy and concern for others", example: "She is a compassionate person." },
+            { word: "concrete", chinese: "明确的；具体的", english: "definite; existing as the real or solid", example: "We need a concrete plan." },
+            { word: "diminish", chinese: "（使）变小，（使）减少", english: "make or become smaller or less", example: "The noise gradually diminished." }
+        ];
+
+        let currentWordIndex = 0;
+        let selectedWords = [];
+        let quizQuestions = [];
+        let wrongQuestions = [];
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function selectWords() {
+            selectedWords = wordBank.slice();
+            shuffleArray(selectedWords);
+            selectedWords = selectedWords.slice(0, 10);
+            currentWordIndex = 0;
+            displayWord();
+        }
+
+        function displayWord() {
+            const word = selectedWords[currentWordIndex];
+            document.getElementById('word').textContent = word.word;
+            document.getElementById('chinese-definition').textContent = word.chinese;
+            document.getElementById('english-definition').textContent = word.english;
+            document.getElementById('example').textContent = word.example;
+        }
+
+        function prevWord() {
+            if (currentWordIndex > 0) {
+                currentWordIndex--;
+                displayWord();
+            }
+        }
+
+        function nextWord() {
+            if (currentWordIndex < selectedWords.length - 1) {
+                currentWordIndex++;
+                displayWord();
+            }
+        }
+
+        function startQuiz() {
+            document.getElementById('learning-stage').style.display = 'none';
+            document.getElementById('quiz-stage').style.display = 'block';
+            quizQuestions = [];
+            selectedWords.forEach(word => {
+                const isChineseQuestion = Math.random() > 0.5;
+                if (isChineseQuestion) {
+                    quizQuestions.push({ question: word.word, answer: word.chinese, type: 'chinese', retryCount: 0 });
+                } else {
+                    quizQuestions.push({ question: word.chinese, answer: word.word, type: 'english', retryCount: 0 });
+                }
+            });
+            shuffleArray(quizQuestions);
+            wrongQuestions = [];
+            displayQuizQuestion();
+        }
+
+        function displayQuizQuestion() {
+            if (quizQuestions.length === 0) {
+                if (wrongQuestions.length === 0) {
+                    document.getElementById('quiz-question').innerHTML = '<p>恭喜！所有题目已完成！</p>';
+                    document.getElementById('quiz-options').innerHTML = '';
+                    document.getElementById('quiz-result').innerHTML = '';
+                    return;
+                } else {
+                    quizQuestions = wrongQuestions.slice();
+                    wrongQuestions = [];
+                }
+            }
+            const questionObj = quizQuestions[0];
+            let questionText;
+            if (questionObj.type === 'chinese') {
+                questionText = questionObj.question + ' 的中文释义是？';
+            } else {
+                questionText = '请选出 “' + questionObj.question + '” 的英文单词';
+            }
+            document.getElementById('quiz-word').textContent = questionText;
+            const wrongTagContainer = document.getElementById('wrong-tag-container');
+            if (questionObj.retryCount > 0) {
+                wrongTagContainer.innerHTML = `<span class="wrong-tag">错题重做 ${questionObj.retryCount}</span>`;
+            } else {
+                wrongTagContainer.innerHTML = '';
+            }
+            const options = document.getElementById('quiz-options');
+            options.innerHTML = '';
+            const optionsList = [questionObj.answer];
+            let otherOptions;
+            if (questionObj.type === 'chinese') {
+                otherOptions = selectedWords.map(word => word.chinese).filter(chinese => chinese !== questionObj.answer);
+            } else {
+                otherOptions = selectedWords.map(word => word.word).filter(word => word !== questionObj.answer);
+            }
+            while (optionsList.length < 4 && otherOptions.length > 0) {
+                const randomIndex = Math.floor(Math.random() * otherOptions.length);
+                optionsList.push(otherOptions[randomIndex]);
+                otherOptions.splice(randomIndex, 1);
+            }
+            shuffleArray(optionsList);
+            optionsList.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.onclick = () => checkAnswer(option, questionObj.answer, questionObj);
+                options.appendChild(button);
+            });
+        }
+
+        function checkAnswer(selectedAnswer, correctAnswer, questionObj) {
+            const resultDiv = document.getElementById('quiz-result');
+            if (selectedAnswer === correctAnswer) {
+                resultDiv.textContent = '回答正确！';
+                resultDiv.className = 'result correct';
+                setTimeout(() => {
+                    resultDiv.textContent = '';
+                    resultDiv.className = 'result';
+                    quizQuestions.shift();
+                    displayQuizQuestion();
+                }, 2000);
+            } else {
+                resultDiv.textContent = `回答错误，正确答案是：${correctAnswer}`;
+                resultDiv.className = 'result incorrect';
+                questionObj.retryCount++;
+                setTimeout(() => {
+                    resultDiv.textContent = '';
+                    resultDiv.className = 'result';
+                    quizQuestions.shift();
+                    wrongQuestions.push(questionObj);
+                    displayQuizQuestion();
+                }, 2000);
+            }
+        }
+
+        selectWords();
+    </script>
+</body>
+</html>
